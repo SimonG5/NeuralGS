@@ -1,2 +1,3 @@
 # NeuralGS
-A neural network framework written in c++ alongside eigen.
+
+A neural network written in c++ along side Eigen3 and Nlohmann Json
