@@ -15,12 +15,6 @@ public:
         this->momentum = momentum;
     }
 
-    void preUpdateLayer()
-    {
-        if (this->decay != 0)
-            this->currentLearningRate = this->learningRate * (1 / (1 + this->decay * this->iterations));
-    }
-
     void updateLayer(Layer *layer)
     {
         if (this->momentum != 0)
@@ -33,10 +27,5 @@ public:
             layer->weights += -this->currentLearningRate * layer->dWeights;
             layer->biases += -this->currentLearningRate * layer->dBiases;
         }
-    }
-
-    void postUpdateLayer()
-    {
-        this->iterations++;
     }
 };

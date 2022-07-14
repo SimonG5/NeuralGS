@@ -17,23 +17,12 @@ public:
         this->rho = rho;
     }
 
-    void preUpdateLayer()
-    {
-        if (this->decay != 0)
-            this->currentLearningRate = this->learningRate * (1 / (1 + this->decay * this->iterations));
-    }
-
     void updateLayer(Layer *layer)
     {
-        // layer->optiWeightHelper = this->rho * layer->optiWeightHelper + (1 - this->rho) * layer->dWeights.array().pow(2);
-        // layer->optiBiasHelper = this->rho * layer->optiBiasHelper + (1 - this->rho) * layer->dBiases.array().pow(2);
+        layer->optiWeightHelper = (this->rho * layer->optiWeightHelper).array() + (1 - this->rho) * layer->dWeights.array().pow(2);
+        layer->optiBiasHelper = (this->rho * layer->optiBiasHelper).array() + (1 - this->rho) * layer->dBiases.array().pow(2);
 
         layer->weights.array() += (-this->currentLearningRate * layer->dWeights).array() / (layer->optiWeightHelper.array().sqrt() + this->epsilon).array();
-        layer->weights.array() += (-this->currentLearningRate * layer->dBiases).array() / (layer->optiBiasHelper.array().sqrt() + this->epsilon).array();
-    }
-
-    void postUpdateLayer()
-    {
-        this->iterations++;
+        layer->biases.array() += (-this->currentLearningRate * layer->dBiases).array() / (layer->optiBiasHelper.array().sqrt() + this->epsilon).array();
     }
 };

@@ -25,4 +25,5 @@ public:
     Eigen::MatrixXd forward(const Eigen::MatrixXd &input);
     void backward(const Eigen::MatrixXd &output, const Eigen::VectorXi &y);
     void train(const Eigen::MatrixXd &x, const Eigen::VectorXi &y, const int &iterations, const int &printGap);
+    void saveModel();
 };

@@ -1,18 +1,17 @@
-#include <vector>
 #include <random>
 #include <numeric>
-#include <iostream>
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
 #include <fstream>
-#include <string>
 
 #include <nlohmann/json.hpp>
 
 #include "src/Activators/ReLu.cpp"
 #include "src/Optimizers/SGD.cpp"
 #include "src/Optimizers/AdaGrad.cpp"
+#include "src/Optimizers/RMSprop.cpp"
+#include "src/Optimizers/Adam.cpp"
 #include "src/Activators/Sigmoid.cpp"
 #include "src/Activators/Softmax.cpp"
 #include "src/Losses/CategoricalCrossentropy.cpp"
@@ -55,11 +54,13 @@ int main()
     Loss *loss = new CategoricalCrossentropy();
 
     Optimizer *sgd = new SGD(0.05, 1e-3, 0.9);
-    Optimizer *adaGrad = new AdaGrad(1, 0, 1e-7);
+    Optimizer *adaGrad = new AdaGrad(1, 1e-4, 1e-7);
+    Optimizer *rms = new RMSprop(0.001, 1e-4, 1e-7, 0.9);
+    Optimizer *adam = new Adam(0.05, 1e-5, 1e-7, 0.9, 0.999);
 
     Model *model = new Model();
     model->setLoss(loss);
-    model->setOptimizer(sgd);
+    model->setOptimizer(adam);
 
     Layer *firstLayer = new Layer(2, 64, 0, 5e-4, 0, 5e-4);
     Activator *relu = new ReLu();

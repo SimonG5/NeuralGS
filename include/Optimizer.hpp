@@ -11,9 +11,18 @@ protected:
     double currentLearningRate;
 
 public:
-    virtual void preUpdateLayer() = 0;
     virtual void updateLayer(Layer *layer) = 0;
-    virtual void postUpdateLayer() = 0;
+
+    void preUpdateLayer()
+    {
+        if (this->decay != 0)
+            this->currentLearningRate = this->learningRate * (1 / (1 + this->decay * this->iterations));
+    }
+
+    void postUpdateLayer()
+    {
+        this->iterations++;
+    }
 
     double getLearningRate()
     {

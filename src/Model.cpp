@@ -17,6 +17,27 @@ void Model::train(const Eigen::MatrixXd &x, const Eigen::VectorXi &y, const int 
     {
         Eigen::MatrixXd output = forward(x);
 
+        double correctValues = 0;
+
+        for (int r = 0; r < output.rows(); r++)
+        {
+            double highestValue = 0;
+            int highestIndex = 0;
+            for (int c = 0; c < output.cols(); c++)
+            {
+                if (output(r, c) > highestValue)
+                {
+                    highestValue = output(r, c);
+                    highestIndex = c;
+                }
+            }
+            if (highestIndex == y(r))
+            {
+                correctValues++;
+            }
+        }
+
+        double accuary = correctValues / y.size();
         double lossVal = this->loss->forward(output, y);
 
         backward(output, y);
@@ -30,8 +51,7 @@ void Model::train(const Eigen::MatrixXd &x, const Eigen::VectorXi &y, const int 
 
         if (i % printGap == 0)
         {
-            std::cout << "Itteration: " << i << " Accuary: "
-                      << " Loss: " << lossVal << " Learning rate: " << this->optimizer->getLearningRate() << std::endl;
+            std::cout << "Itteration: " << i << " Accuary: " << accuary << " Loss: " << lossVal << " Learning rate: " << this->optimizer->getLearningRate() << std::endl;
         }
     }
 }

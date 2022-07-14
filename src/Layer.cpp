@@ -4,9 +4,14 @@
 Layer::Layer(int inputs, int neurons, double weightRegularizerOne, double weightRegularizerTwo, double biasRegularizerOne, double biasRegularizerTwo)
 {
     this->weights = Eigen::MatrixXd::Random(inputs, neurons);
-    this->optiWeightHelper = Eigen::MatrixXd::Zero(inputs, neurons);
     this->biases = Eigen::RowVectorXd::Zero(neurons);
+
+    this->optiWeightHelper = Eigen::MatrixXd::Zero(inputs, neurons);
+    this->weightCache = Eigen::MatrixXd::Zero(inputs, neurons);
+
     this->optiBiasHelper = Eigen::RowVectorXd::Zero(neurons);
+    this->biasCache = Eigen::RowVectorXd::Zero(neurons);
+
     this->weightRegularizerOne = weightRegularizerOne;
     this->weightRegularizerTwo = weightRegularizerTwo;
     this->biasRegularizerOne = biasRegularizerOne;
@@ -51,7 +56,7 @@ void Layer::backward(const Eigen::MatrixXd &dValues)
 
     if (this->biasRegularizerOne > 0)
     {
-        Eigen::RowVectorXd dLOne = Eigen::RowVectorXd::Ones(this->biases.size());
+        Eigen::VectorXd dLOne = Eigen::VectorXd::Ones(this->biases.size());
         for (int i = 0; i < dLOne.size(); i++)
         {
             if (this->weights(i) < 0)

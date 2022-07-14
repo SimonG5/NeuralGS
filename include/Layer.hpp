@@ -5,13 +5,16 @@
 class Layer
 {
 private:
+    Eigen::MatrixXd inputs;
+
 public:
     Eigen::MatrixXd optiWeightHelper;
+    Eigen::MatrixXd weightCache;
     Eigen::RowVectorXd optiBiasHelper;
+    Eigen::RowVectorXd biasCache;
 
     Eigen::MatrixXd output;
 
-    Eigen::MatrixXd inputs;
     Eigen::MatrixXd weights;
     Eigen::RowVectorXd biases;
 
