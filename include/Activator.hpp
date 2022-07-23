@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <omp.h>
 #define MAX(a, b) a > b ? a : b
 
 class Activator
@@ -11,6 +12,7 @@ protected:
     Eigen::MatrixXd output;
 
 public:
+    virtual ~Activator() = default;
     virtual void forward(const Eigen::MatrixXd &inputs) = 0;
     virtual void backward(const Eigen::MatrixXd &dValues) = 0;
 

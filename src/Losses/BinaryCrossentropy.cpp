@@ -5,6 +5,7 @@ class BinaryCrossentropy : public Loss
 public:
     double regularizationLoss(Layer *layer)
     {
+        return 0;
     }
 
     double forward(const Eigen::MatrixXd &inputs, const Eigen::VectorXi &yTrue)

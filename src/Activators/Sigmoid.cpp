@@ -7,6 +7,7 @@ public:
     {
         this->inputs = inputs;
         this->output = Eigen::MatrixXd::Zero(inputs.rows(), inputs.cols());
+#pragma omp parallel for
         for (int r = 0; r < inputs.rows(); r++)
         {
             for (int c = 0; c < inputs.cols(); c++)
@@ -20,6 +21,7 @@ public:
     {
         Eigen::MatrixXd subtractedOutput(this->output.rows(), this->output.cols());
 
+#pragma omp parallel for
         for (int r = 0; r < subtractedOutput.rows(); r++)
             for (int c = 0; c < subtractedOutput.cols(); c++)
                 subtractedOutput(r, c) = 1 - this->output(r, c);

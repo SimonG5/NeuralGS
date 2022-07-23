@@ -7,6 +7,7 @@ public:
     {
         this->inputs = inputs;
         Eigen::MatrixXd output(inputs.rows(), inputs.cols());
+#pragma omp parallel for
         for (int r = 0; r < inputs.rows(); r++)
         {
             double maxVal = inputs.row(r).maxCoeff();
@@ -15,6 +16,7 @@ public:
                 output(r, c) = std::exp(inputs(r, c) - maxVal);
             }
         }
+#pragma omp parallel for
         for (int r = 0; r < inputs.rows(); r++)
         {
             double normalizeBase = output.row(r).sum();
@@ -30,6 +32,7 @@ public:
     {
         this->dInputs = Eigen::MatrixXd(dValues.rows(), dValues.cols());
 
+#pragma omp parallel for
         for (int r = 0; r < dValues.rows(); r++)
         {
             Eigen::MatrixXd digFlat = this->output.row(r).asDiagonal();

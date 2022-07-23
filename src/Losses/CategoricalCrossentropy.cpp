@@ -53,6 +53,7 @@ public:
         int samples = dValues.row(0).size();
         this->dInputs = Eigen::MatrixXd::Zero(yTrue.size(), samples);
 
+#pragma omp parallel for
         for (int r = 0; r < this->dInputs.rows(); r++)
         {
             this->dInputs(r, yTrue(r)) = (-1 / dValues(r, yTrue(r))) / samples;

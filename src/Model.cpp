@@ -1,4 +1,13 @@
 #include "../include/Model.hpp"
+#include <chrono>
+#include <fstream>
+
+Model::Model()
+{
+    this->accuarcyTotal = 0;
+    this->testBatches = 0;
+    this->lossTotal = 0;
+}
 
 Model::~Model()
 {
@@ -51,9 +60,43 @@ void Model::train(const Eigen::MatrixXd &x, const Eigen::VectorXi &y, const int 
 
         if (i % printGap == 0)
         {
-            std::cout << "Itteration: " << i << " Accuary: " << accuary << " Loss: " << lossVal << " Learning rate: " << this->optimizer->getLearningRate() << std::endl;
+            std::cout << "Epoch: " << i << " Accuary: " << accuary << " Loss: " << lossVal << " Learning rate: " << this->optimizer->getLearningRate() << std::endl;
+            saveModel();
         }
     }
+}
+
+void Model::test(const Eigen::MatrixXd &x, const Eigen::VectorXi &y)
+{
+    Eigen::MatrixXd output = forward(x);
+
+    double correctValues = 0;
+
+    for (int r = 0; r < output.rows(); r++)
+    {
+        double highestValue = 0;
+        int highestIndex = 0;
+        for (int c = 0; c < output.cols(); c++)
+        {
+            if (output(r, c) > highestValue)
+            {
+                highestValue = output(r, c);
+                highestIndex = c;
+            }
+        }
+        if (highestIndex == y(r))
+        {
+            correctValues++;
+        }
+    }
+
+    double accuary = correctValues / y.size();
+    double lossVal = this->loss->forward(output, y);
+    this->accuarcyTotal += accuary;
+    this->lossTotal += lossVal;
+    this->testBatches++;
+
+    std::cout << "Test set batch: " << testBatches << ", average accuary: " << (this->accuarcyTotal / testBatches) << ", average loss: " << (this->lossTotal / testBatches) << std::endl;
 }
 
 void Model::setLoss(Loss *loss)
@@ -92,7 +135,7 @@ void Model::backward(const Eigen::MatrixXd &output, const Eigen::VectorXi &y)
 
     for (int i = this->layers.size() - 1; i >= 0; i--)
     {
-        if (i == this->layers.size() - 1)
+        if (i == static_cast<int>(this->layers.size()) - 1)
         {
             this->activators[i]->backward(loss->getDInputs());
         }
@@ -101,5 +144,53 @@ void Model::backward(const Eigen::MatrixXd &output, const Eigen::VectorXi &y)
             this->activators[i]->backward(this->layers[i + 1]->dInputs);
         }
         this->layers[i]->backward(this->activators[i]->getDInputs());
+    }
+}
+
+void Model::saveModel()
+{
+    std::ofstream o("model.json");
+    json output;
+    for (size_t i = 0; i < this->layers.size(); i++)
+    {
+        Eigen::MatrixXd weights = this->layers[i]->getWeights();
+        Eigen::RowVectorXd biases = this->layers[i]->getBiases();
+        for (int r = 0; r < weights.rows(); r++)
+        {
+            for (int c = 0; c < weights.cols(); c++)
+            {
+                output["Layer " + std::to_string(i + 1) + " - " + std::to_string(r + 1) + ":" + std::to_string(c + 1)] = std::to_string(weights(r, c));
+            }
+        }
+        for (int j = 0; j < biases.size(); j++)
+        {
+            output["Biases " + std::to_string(i + 1) + ":" + std::to_string(j + 1)] = std::to_string(biases(j));
+        }
+    }
+    std::ofstream file("model.json");
+    file << output;
+}
+
+void Model::loadModel(json model)
+{
+    for (size_t i = 0; i < this->layers.size(); i++)
+    {
+        Eigen::MatrixXd currentLayer = this->layers[i]->getWeights();
+        Eigen::RowVectorXd currentBias = this->layers[i]->getBiases();
+        for (int r = 0; r < currentLayer.rows(); r++)
+        {
+            for (int c = 0; c < currentLayer.cols(); c++)
+            {
+                std::string weight = model["Layer " + std::to_string(i + 1) + " - " + std::to_string(r + 1) + ":" + std::to_string(c + 1)];
+                currentLayer(r, c) = std::stod(weight);
+            }
+        }
+        for (int r = 0; r < currentBias.size(); r++)
+        {
+            std::string bias = model["Biases " + std::to_string(i + 1) + ":" + std::to_string(r + 1)];
+            currentBias(r) = std::stod(bias);
+        }
+        this->layers[i]->setWeights(currentLayer);
+        this->layers[i]->setBiases(currentBias);
     }
 }

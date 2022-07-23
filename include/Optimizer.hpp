@@ -11,6 +11,7 @@ protected:
     double currentLearningRate;
 
 public:
+    virtual ~Optimizer() = default;
     virtual void updateLayer(Layer *layer) = 0;
 
     void preUpdateLayer()

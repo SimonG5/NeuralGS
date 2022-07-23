@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <Eigen/Dense>
+#include <omp.h>
 #include "Layer.hpp"
 
 class Loss
@@ -20,6 +21,7 @@ protected:
     }
 
 public:
+    virtual ~Loss() = default;
     virtual double regularizationLoss(Layer *layer) = 0;
     virtual double forward(const Eigen::MatrixXd &inputs, const Eigen::VectorXi &yTrue) = 0;
     virtual void backward(const Eigen::MatrixXd &dValues, const Eigen::VectorXi &yTrue) = 0;

@@ -1,78 +1,46 @@
-#include <random>
-#include <numeric>
-#include <algorithm>
-#include <cmath>
-#include <iomanip>
-#include <fstream>
-
-#include <nlohmann/json.hpp>
+#include <string>
+#include <vector>
 
 #include "src/Activators/ReLu.cpp"
-#include "src/Optimizers/SGD.cpp"
-#include "src/Optimizers/AdaGrad.cpp"
-#include "src/Optimizers/RMSprop.cpp"
 #include "src/Optimizers/Adam.cpp"
-#include "src/Activators/Sigmoid.cpp"
 #include "src/Activators/Softmax.cpp"
 #include "src/Losses/CategoricalCrossentropy.cpp"
-#include "Model.hpp"
+#include "include/Model.hpp"
 
-using json = nlohmann::json;
-
-double random(const double &min, const double &max)
-{
-    std::random_device rd;
-    std::default_random_engine generator(rd()); // rd() provides a random seed
-    std::uniform_real_distribution<double> distribution(min, max);
-    return distribution(generator);
-}
-
-std::tuple<Eigen::MatrixXd, Eigen::RowVectorXi> spiral_data(const size_t &points, const size_t &classes)
-{
-    Eigen::MatrixXd X(points * classes, 2);
-    Eigen::RowVectorXi Y(points * classes);
-    double r, t;
-    for (size_t i = 0; i < classes; i++)
-    {
-        for (size_t j = 0; j < points; j++)
-        {
-            r = double(j) / double(points);
-            t = i * 4 + (4 * r);
-            X.row(i * points + j) = Eigen::RowVector2d(r * cos(t * 2.5), r * sin(t * 2.5)) + Eigen::RowVector2d(random(-0.15, 0.15), random(-0.15, 0.15));
-            Y(i * points + j) = i;
-        }
-    }
-    return std::make_tuple(X, Y);
-}
-
+// Example usage
 int main()
 {
     srand(time(NULL));
 
-    std::tuple<Eigen::MatrixXd, Eigen::RowVectorXi> data = spiral_data(100, 3);
-
     Loss *loss = new CategoricalCrossentropy();
 
-    Optimizer *sgd = new SGD(0.05, 1e-3, 0.9);
-    Optimizer *adaGrad = new AdaGrad(1, 1e-4, 1e-7);
-    Optimizer *rms = new RMSprop(0.001, 1e-4, 1e-7, 0.9);
-    Optimizer *adam = new Adam(0.05, 1e-5, 1e-7, 0.9, 0.999);
+    Optimizer *adam = new Adam(0.001, 1e-5, 1e-7, 0.9, 0.999);
 
-    Model *model = new Model();
-    model->setLoss(loss);
-    model->setOptimizer(adam);
+    Model model;
+    model.setLoss(loss);
+    model.setOptimizer(adam);
 
-    Layer *firstLayer = new Layer(2, 64, 0, 5e-4, 0, 5e-4);
+    Layer *firstLayer = new Layer(30, 128, 0, 5e-4, 0, 5e-4);
     Activator *relu = new ReLu();
-    Layer *secondLayer = new Layer(64, 3, 0, 0, 0, 0);
+    Layer *secondLayer = new Layer(128, 128, 0, 5e-4, 0, 5e-4);
+    Activator *reluTwo = new ReLu();
+    Layer *thirdLayer = new Layer(128, 128, 0, 5e-4, 0, 5e-4);
+    Activator *reluThree = new ReLu();
+    Layer *fourtLayer = new Layer(128, 325, 0, 0, 0, 0);
     Activator *smax = new Softmax();
 
-    model->appendLayer(firstLayer, relu);
-    model->appendLayer(secondLayer, smax);
+    model.appendLayer(firstLayer, relu);
+    model.appendLayer(secondLayer, reluTwo);
+    model.appendLayer(thirdLayer, reluThree);
+    model.appendLayer(fourtLayer, smax);
 
-    model->train(std::get<0>(data), std::get<1>(data), 10000, 100);
+    Eigen::MatrixXd x;
+    Eigen::VectorXi y;
 
-    delete (model);
+    int epochs = 10;
+    int printGap = 1;
+
+    model.train(x, y, epochs, printGap);
 
     return 0;
 }
